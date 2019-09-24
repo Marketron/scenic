@@ -1,9 +1,12 @@
+require "scenic/configuration"
+
 module Scenic
   # @api private
   class Definition
-    def initialize(name, version)
+    def initialize(name, version, shared)
       @name = name
       @version = version.to_i
+      @shared = shared
     end
 
     def to_sql
@@ -19,7 +22,11 @@ module Scenic
     end
 
     def path
-      File.join("db", "views", filename)
+      if(@shared)
+        File.join(Scenic::Configuration.new.shared_migrations_directory, "views", filename)
+      else
+        File.join(Scenic::Configuration.new.tenanted_migrations_directory, "views", filename)
+      end
     end
 
     def version

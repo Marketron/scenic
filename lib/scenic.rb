@@ -14,12 +14,16 @@ require "scenic/index"
 module Scenic
   # Hooks Scenic into Rails.
   #
-  # Enables scenic migration methods, migration reversability, and `schema.rb`
+  # Enables scenic migration methods, migration reversibility, and `schema.rb`
   # dumping.
   def self.load
-    ActiveRecord::ConnectionAdapters::AbstractAdapter.include Scenic::Statements
-    ActiveRecord::Migration::CommandRecorder.include Scenic::CommandRecorder
-    ActiveRecord::SchemaDumper.prepend Scenic::SchemaDumper
+    if Gem.loaded_specs.has_key?('roomer') && Gem.loaded_specs.has_key?('roomer-muid')
+      ActiveRecord::ConnectionAdapters::AbstractAdapter.include Scenic::Statements
+      ActiveRecord::Migration::CommandRecorder.include Scenic::CommandRecorder
+      ActiveRecord::SchemaDumper.prepend Scenic::SchemaDumper
+    else
+      raise 'This version of scenic requires your application to use 2 additional gems, roomer and roomer-muid. Check the readme for details.'
+    end
   end
 
   # The current database adapter used by Scenic.
@@ -27,6 +31,6 @@ module Scenic
   # This defaults to {Adapters::Postgres} but can be overridden
   # via {Configuration}.
   def self.database
-    configuration.database
+    Scenic::Configuration.new.database
   end
 end

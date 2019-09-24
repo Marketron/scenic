@@ -1,6 +1,7 @@
 require "rails/generators"
 require "rails/generators/active_record"
 require "generators/scenic/materializable"
+require "scenic/configuration"
 
 module Scenic
   module Generators
@@ -25,15 +26,21 @@ module Scenic
       end
 
       def create_migration_file
+        migration_path = "db/migrate"
+        if(@shared)
+          migration_path = Scenic::Configuration.new.shared_migrations_directory
+        else
+          migration_path = Scenic::Configuration.new.tenanted_migrations_directory
+        end
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            "db/migrate/create_#{plural_file_name}.rb",
+            Rails.root.join(migration_path, "create_#{plural_file_name}.rb"),
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            "db/migrate/update_#{plural_file_name}_to_version_#{version}.rb",
+            Rails.root.join(migration_path, "update_#{plural_file_name}_to_version_#{version}.rb"),
           )
         end
       end
@@ -73,8 +80,16 @@ module Scenic
 
       private
 
+      def shared?
+        @shared ||= options[:shared]
+      end
+
       def views_directory_path
-        @views_directory_path ||= Rails.root.join("db", "views")
+        if(@shared)
+          @views_directory_path ||= Rails.root.join(Scenic::Configuration.new.shared_migrations_directory, 'views')
+        else
+          @views_directory_path ||= Rails.root.join(Scenic::Configuration.new.tenanted_migrations_directory, 'views')
+        end
       end
 
       def version_regex
@@ -86,11 +101,11 @@ module Scenic
       end
 
       def definition
-        Scenic::Definition.new(plural_file_name, version)
+        Scenic::Definition.new(plural_file_name, version, @shared)
       end
 
       def previous_definition
-        Scenic::Definition.new(plural_file_name, previous_version)
+        Scenic::Definition.new(plural_file_name, previous_version, @shared)
       end
 
       def plural_file_name

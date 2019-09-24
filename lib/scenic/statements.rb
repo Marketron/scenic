@@ -22,7 +22,7 @@ module Scenic
     #     SELECT * FROM users WHERE users.active = 't'
     #   SQL
     #
-    def create_view(name, version: nil, sql_definition: nil, materialized: false)
+    def create_view(name, version: nil, sql_definition: nil, shared: false, materialized: false)
       if version.present? && sql_definition.present?
         raise(
           ArgumentError,
@@ -34,7 +34,7 @@ module Scenic
         version = 1
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version, shared)
 
       if materialized
         Scenic.database.create_materialized_view(
@@ -88,7 +88,7 @@ module Scenic
     # @example
     #   update_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def update_view(name, version: nil, sql_definition: nil, revert_to_version: nil, materialized: false)
+    def update_view(name, version: nil, sql_definition: nil, shared: false, revert_to_version: nil, materialized: false)
       if version.blank? && sql_definition.blank?
         raise(
           ArgumentError,
@@ -103,7 +103,7 @@ module Scenic
         )
       end
 
-      sql_definition ||= definition(name, version)
+      sql_definition ||= definition(name, version, shared)
 
       if materialized
         Scenic.database.update_materialized_view(
@@ -132,7 +132,7 @@ module Scenic
     # @example
     #   replace_view :engagement_reports, version: 3, revert_to_version: 2
     #
-    def replace_view(name, version: nil, revert_to_version: nil, materialized: false)
+    def replace_view(name, version: nil, shared: false, revert_to_version: nil, materialized: false)
       if version.blank?
         raise ArgumentError, "version is required"
       end
@@ -141,15 +141,15 @@ module Scenic
         raise ArgumentError, "Cannot replace materialized views"
       end
 
-      sql_definition = definition(name, version)
+      sql_definition = definition(name, version, shared)
 
       Scenic.database.replace_view(name, sql_definition)
     end
 
     private
 
-    def definition(name, version)
-      Scenic::Definition.new(name, version).to_sql
+    def definition(name, version, shared)
+      Scenic::Definition.new(name, version, shared).to_sql
     end
 
     def no_data(materialized)
