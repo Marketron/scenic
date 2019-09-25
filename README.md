@@ -6,6 +6,12 @@
 [![Documentation Quality](http://inch-ci.org/github/scenic-views/scenic.svg?branch=master)](http://inch-ci.org/github/scenic-views/scenic)
 [![Reviewed by Hound](https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg)](https://houndci.com)
 
+## Roomer specific changes
+
+The SQL file, migration file and migration class are prepended with "(R)roomer" because that allows the migration to be run on each tenant without having to specify the schema name in the SQL or loop through the tenants. Roomer is required in this forked version of the gem and will tell you if it doesn't exist in your rails application. New directories called "views" are/will be created in the db/migrate/shared and db/migrate/tenanted for the SQL files. The shared and tenanted schema files are updated from taking advantage of Roomer. Otherwise, the creation and updating works as it's described in the original readme file. 
+
+## Original README text
+
 Scenic adds methods to `ActiveRecord::Migration` to create and manage database
 views in Rails.
 
