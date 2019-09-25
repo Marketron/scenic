@@ -40,12 +40,12 @@ module Scenic
         if creating_new_view? || destroying_initial_view?
           migration_template(
             "db/migrate/create_view.erb",
-            Rails.root.join(migration_path, "scenic_create_#{plural_file_name}.rb"),
+            Rails.root.join(migration_path, "roomer_create_#{plural_file_name}.rb"),
           )
         else
           migration_template(
             "db/migrate/update_view.erb",
-            Rails.root.join(migration_path, "scenic_update_#{plural_file_name}_to_version_#{version}.rb"),
+            Rails.root.join(migration_path, "roomer_update_#{plural_file_name}_to_version_#{version}.rb"),
           )
         end
       end
@@ -68,9 +68,9 @@ module Scenic
 
         def migration_class_name
           if creating_new_view?
-            "ScenicCreate#{class_name.tr('.', '').pluralize}"
+            "RoomerCreate#{class_name.tr('.', '').pluralize}"
           else
-            "ScenicUpdate#{class_name.pluralize}ToVersion#{version}"
+            "RoomerUpdate#{class_name.pluralize}ToVersion#{version}"
           end
         end
 
