@@ -11,6 +11,11 @@ module Scenic
       include Scenic::Generators::Materializable
       source_root File.expand_path("templates", __dir__)
 
+      def initialize(args, *options)
+        @configuration = Scenic::Configuration.new
+        super(args, options)
+      end
+
       def create_views_directory
         unless views_directory_path.exist?
           empty_directory(views_directory_path)
@@ -28,9 +33,9 @@ module Scenic
       def create_migration_file
         migration_path = "db/migrate"
         if(@shared)
-          migration_path = Scenic::Configuration.new.shared_migrations_directory
+          migration_path = @configuration.shared_migrations_directory
         else
-          migration_path = Scenic::Configuration.new.tenanted_migrations_directory
+          migration_path = @configuration.tenanted_migrations_directory
         end
         if creating_new_view? || destroying_initial_view?
           migration_template(
@@ -86,9 +91,9 @@ module Scenic
 
       def views_directory_path
         if(@shared)
-          @views_directory_path ||= Rails.root.join(Scenic::Configuration.new.shared_migrations_directory, 'views')
+          @views_directory_path ||= Rails.root.join(@configuration.shared_migrations_directory, 'views')
         else
-          @views_directory_path ||= Rails.root.join(Scenic::Configuration.new.tenanted_migrations_directory, 'views')
+          @views_directory_path ||= Rails.root.join(@configuration.tenanted_migrations_directory, 'views')
         end
       end
 
