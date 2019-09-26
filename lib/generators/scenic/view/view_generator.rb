@@ -12,8 +12,24 @@ module Scenic
       source_root File.expand_path("templates", __dir__)
 
       def initialize(args, *options)
-        @configuration = Scenic::Configuration.new
+        if args.present? && args[1].present?
+          if %w(true shared global).include? args[1].downcase
+            @shared = true
+          elsif (args[1].include?("="))
+            @shared = args[1].split('=')[1].downcase == "true"
+          elsif (args[1].include?(":"))
+            @shared = args[1].split('=')[1].downcase == "true"
+          else
+            @shared = false
+          end
+        else
+          @shared = false
+        end
         super(args, options)
+      end
+
+      def shared?
+        @shared
       end
 
       def create_views_directory
@@ -33,9 +49,9 @@ module Scenic
       def create_migration_file
         migration_path = "db/migrate"
         if(@shared)
-          migration_path = @configuration.shared_migrations_directory
+          migration_path = Roomer.shared_migrations_directory
         else
-          migration_path = @configuration.tenanted_migrations_directory
+          migration_path = Roomer.tenanted_migrations_directory
         end
         if creating_new_view? || destroying_initial_view?
           migration_template(
@@ -85,15 +101,11 @@ module Scenic
 
       private
 
-      def shared?
-        @shared ||= options[:shared]
-      end
-
       def views_directory_path
         if(@shared)
-          @views_directory_path ||= Rails.root.join(@configuration.shared_migrations_directory, 'views')
+          @views_directory_path ||= Rails.root.join(Roomer.shared_migrations_directory, 'views')
         else
-          @views_directory_path ||= Rails.root.join(@configuration.tenanted_migrations_directory, 'views')
+          @views_directory_path ||= Rails.root.join(Roomer.tenanted_migrations_directory, 'views')
         end
       end
 
@@ -130,11 +142,10 @@ module Scenic
       end
 
       def create_view_options
-        if materialized?
-          ", materialized: #{no_data? ? '{ no_data: true }' : true}"
-        else
-          ""
-        end
+        options = ""
+        options += ", materialized: #{no_data? ? '{ no_data: true }' : true}" if @materialized
+        options += ", shared: true" if @shared
+        options
       end
 
       def destroying_initial_view?

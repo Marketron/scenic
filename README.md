@@ -8,7 +8,59 @@
 
 ## Roomer specific changes
 
-The SQL file, migration file and migration class are prepended with "(R)roomer" because that allows the migration to be run on each tenant without having to specify the schema name in the SQL or loop through the tenants. Roomer is required in this forked version of the gem and will tell you if it doesn't exist in your rails application. New directories called "views" are/will be created in the db/migrate/shared and db/migrate/tenanted for the SQL files. The shared and tenanted schema files are updated from taking advantage of Roomer. Otherwise, the creation and updating works as it's described in the original readme file. 
+Roomer is required in this forked version of the gem and will tell you if it doesn't exist in your rails application.
+
+The SQL file, migration file, and migration class are prepended with "(R)roomer" allowing the migration to be run on each tenant without having to specify the schema name or iterate over tenants. 
+
+By using Roomer the views are also automatically added to the schareD_schema.rb and tenanted_schema.rb files via Roomer::Schema.dump in Roomer's rake tasks. 
+
+New directories are created under the shared and tenanted schema locations for the SQL files
+```shell script
+db/migrate/shared/views
+db/migrate/tenanted/views
+```  
+***
+
+To create a new view in the global schema, run the generator with the "shared=true" option (notice the pluralized name)
+```shell script
+bundle exec rails generate scenic:view name_of_postgres_view shared=true
+```
+This will output links in the console to the SQL file for the query and Roomer migration that runs it
+```shell script
+create  db/migrate/global/views/name_of_postgres_views_v01.sql
+create  db/migrate/global/20190926171409_roomer_create_name_of_postgres_views.rb
+```
+To create a new view in a tenanted schema, run the generator without the shared option
+```shell script
+bundle exec rails generate scenic:view sc_test_view_mats
+```
+To update the first view re-run the exact same command as before
+```shell script
+bundle exec rails generate scenic:view name_of_postgres_view shared=true
+```
+Which then provides a version 02 of the SQL file with the same query contents for editing and a new migration to drop and create the view
+```shell script
+create  db/migrate/global/views/name_of_postgres_views_v02.sql
+create  db/migrate/global/20190926171420_roomer_update_name_of_postgres_views_to_version_2.rb
+```
+Not ideal, but you can see the changes between versions using git diff (--word-diff is optional)
+```shell script
+git diff --no-index --word-diff db/migrate/tenanted/views/name_of_postgres_views_v01.sql db/migrate/tenanted/views/name_of_postgres_views_v02.sql
+```
+Once you're done making changes run db:migrate like you normally would using Roomer, either db:migrate or specify the shared/tenanted migrate or rollback.
+
+Currently the materialize option does not work as a result of these changes; but you may be able to edit the migration manually and get it to work. The scenic model generator still works but doesn't take Roomer's multi-tenanted environment into account; but it can be modified manually.
+
+Here are the methods with their signatures available in migrations with the inclusion of the scenic gem
+```shell script
+create_view(name, version: nil, sql_definition: nil, shared: false, materialized: false)
+drop_view(name, revert_to_version: nil, shared: false, materialized: false)
+update_view(name, version: nil, sql_definition: nil, shared: false, revert_to_version: nil, materialized: false)
+replace_view(name, version: nil, shared: false, revert_to_version: nil, materialized: false)
+```
+
+Following are the contents of the original scenic readme text.
+***
 
 ## Original README text
 

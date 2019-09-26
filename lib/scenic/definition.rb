@@ -23,9 +23,9 @@ module Scenic
 
     def path
       if(@shared)
-        File.join(Scenic::Configuration.new.shared_migrations_directory, "views", filename)
+        File.join(Roomer.shared_migrations_directory, "views", filename)
       else
-        File.join(Scenic::Configuration.new.tenanted_migrations_directory, "views", filename)
+        File.join(Roomer.tenanted_migrations_directory, "views", filename)
       end
     end
 
