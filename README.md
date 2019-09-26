@@ -49,8 +49,6 @@ git diff --no-index --word-diff db/migrate/tenanted/views/name_of_postgres_views
 ```
 Once you're done making changes run db:migrate like you normally would using Roomer, either db:migrate or specify the shared/tenanted migrate or rollback.
 
-Currently the materialize option does not work as a result of these changes; but you may be able to edit the migration manually and get it to work. The scenic model generator still works but doesn't take Roomer's multi-tenanted environment into account; but it can be modified manually.
-
 Here are the methods with their signatures available in migrations with the inclusion of the scenic gem
 ```shell script
 create_view(name, version: nil, sql_definition: nil, shared: false, materialized: false)
@@ -58,6 +56,12 @@ drop_view(name, revert_to_version: nil, shared: false, materialized: false)
 update_view(name, version: nil, sql_definition: nil, shared: false, revert_to_version: nil, materialized: false)
 replace_view(name, version: nil, shared: false, revert_to_version: nil, materialized: false)
 ```
+###Issues
+Currently the materialize option does not work as a result of these changes; but you may be able to edit the migration manually and get it to work. 
+
+The scenic model generator still works but doesn't take Roomer's multi-tenanted environment into account; but the model can be modified manually with the roomer attribute.
+
+Having the views included in the schema files is messy. If Roomer could accept a new statement like "include_sql_file" with the path to the view file (db/migrate/tenanted/views/name_of_postgres_views_v01.sql), read its contents and execute it, then our commits might be easier to manage.
 
 Following are the contents of the original scenic readme text.
 ***
