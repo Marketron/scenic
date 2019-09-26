@@ -115,7 +115,7 @@ module Scenic
       #
       # @return [void]
       def drop_view(name)
-        execute "DROP VIEW #{quote_table_name(name)};"
+        execute "DROP VIEW IF EXISTS #{quote_table_name(name)};"
       end
 
       # Creates a materialized view in the database
@@ -180,7 +180,7 @@ module Scenic
       # @return [void]
       def drop_materialized_view(name)
         raise_unless_materialized_views_supported
-        execute "DROP MATERIALIZED VIEW #{quote_table_name(name)};"
+        execute "DROP MATERIALIZED VIEW IF EXISTS #{quote_table_name(name)};"
       end
 
       # Refreshes a materialized view from its SQL schema.
